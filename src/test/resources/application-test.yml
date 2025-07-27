@@ -1,0 +1,26 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+      
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+    
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+# Logging
+logging:
+  level:
+    com.picturetojson: DEBUG
+    org.springframework.test: DEBUG
