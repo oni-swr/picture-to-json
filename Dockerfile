@@ -8,14 +8,23 @@ COPY src ./src
 # Build the application
 RUN mvn clean package -DskipTests
 
-# Production stage
-FROM eclipse-temurin:17-jre-alpine
+# Production stage  
+FROM eclipse-temurin:17-jre-jammy
 
 WORKDIR /app
 
-# Install tesseract and required dependencies
-RUN apk add --no-cache tesseract-ocr tesseract-ocr-data-eng
-RUN apk add --no-cache libc6-compat
+# Install tesseract, OpenCV dependencies, and other required packages
+RUN apt-get update && apt-get install -y \
+    tesseract-ocr \
+    tesseract-ocr-eng \
+    libtesseract-dev \
+    libopencv-dev \
+    libopencv-contrib-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set Tesseract data path environment variable
+ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata/
 
 # Create upload directory
 RUN mkdir -p /tmp/picture-to-json/uploads

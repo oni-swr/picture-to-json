@@ -87,3 +87,10 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
+
+# Production OCR Configuration      
+app:
+  ocr:
+    tesseract:
+      data-path: /usr/share/tesseract-ocr/4.00/tessdata
+      language: eng

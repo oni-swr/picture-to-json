@@ -1,6 +1,8 @@
 package com.picturetojson.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -41,9 +43,11 @@ public class Document {
     private String extractedText;
     
     @Column(columnDefinition = "JSON")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String extractedJson;
     
     @Column(columnDefinition = "JSON")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String correctedJson;
     
     @Column(columnDefinition = "TEXT")
