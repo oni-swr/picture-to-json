@@ -43,6 +43,12 @@ app:
     tesseract:
       data-path: ${java.io.tmpdir}/tessdata
       language: eng
+    google-vision:
+      enabled: false
+      credentials-path: # Path to Google Vision API credentials JSON file
+    handwriting:
+      auto-detect: true  # Automatically detect handwriting and use appropriate OCR engine
+    default-engine: TESSERACT  # Default OCR engine (TESSERACT or GOOGLE_VISION)
     
 # Logging Configuration
 logging:
@@ -94,3 +100,9 @@ app:
     tesseract:
       data-path: /usr/share/tesseract-ocr/4.00/tessdata
       language: eng
+    google-vision:
+      enabled: ${GOOGLE_VISION_ENABLED:false}
+      credentials-path: ${GOOGLE_APPLICATION_CREDENTIALS:}
+    handwriting:
+      auto-detect: ${HANDWRITING_AUTO_DETECT:true}
+    default-engine: ${DEFAULT_OCR_ENGINE:TESSERACT}

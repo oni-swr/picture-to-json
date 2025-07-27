@@ -3,7 +3,6 @@ package com.picturetojson.service;
 import com.picturetojson.dto.DocumentResponseDto;
 import com.picturetojson.entity.Document;
 import com.picturetojson.repository.DocumentRepository;
-import net.sourceforge.tess4j.TesseractException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.slf4j.Logger;
@@ -155,7 +154,7 @@ public class DocumentProcessingService {
     /**
      * Core document processing logic
      */
-    private void processDocument(Document document) throws IOException, TesseractException {
+    private void processDocument(Document document) throws IOException, Exception {
         logger.debug("Processing document: {}", document.getFilename());
         
         File file = new File(document.getFilePath());
@@ -195,7 +194,7 @@ public class DocumentProcessingService {
     /**
      * Process PDF document
      */
-    private String processPdfDocument(File file, Document document) throws IOException, TesseractException {
+    private String processPdfDocument(File file, Document document) throws IOException, Exception {
         logger.debug("Processing PDF document: {}", file.getName());
         
         StringBuilder extractedText = new StringBuilder();
@@ -229,7 +228,7 @@ public class DocumentProcessingService {
     /**
      * Process image document
      */
-    private String processImageDocument(File file, Document document) throws IOException, TesseractException {
+    private String processImageDocument(File file, Document document) throws IOException, Exception {
         logger.debug("Processing image document: {}", file.getName());
         
         // Update progress

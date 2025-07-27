@@ -4,6 +4,7 @@ import com.picturetojson.dto.CorrectionRequestDto;
 import com.picturetojson.dto.DocumentResponseDto;
 import com.picturetojson.entity.Document;
 import com.picturetojson.service.DocumentProcessingService;
+import com.picturetojson.service.OcrService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,9 +31,11 @@ public class DocumentController {
     private static final Logger logger = LoggerFactory.getLogger(DocumentController.class);
     
     private final DocumentProcessingService documentProcessingService;
+    private final OcrService ocrService;
     
-    public DocumentController(DocumentProcessingService documentProcessingService) {
+    public DocumentController(DocumentProcessingService documentProcessingService, OcrService ocrService) {
         this.documentProcessingService = documentProcessingService;
+        this.ocrService = ocrService;
     }
     
     @PostMapping("/upload")
@@ -183,6 +186,32 @@ public class DocumentController {
             logger.error("Error applying corrections", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(null);
+        }
+    }
+    
+    @GetMapping("/ocr/engines")
+    @Operation(summary = "Get available OCR engines")
+    public ResponseEntity<String[]> getAvailableOcrEngines() {
+        try {
+            String[] engines = ocrService.getAvailableEngines();
+            return ResponseEntity.ok(engines);
+        } catch (Exception e) {
+            logger.error("Error retrieving available OCR engines", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(null);
+        }
+    }
+    
+    @GetMapping("/ocr/handwriting/available")
+    @Operation(summary = "Check if handwriting recognition is available")
+    public ResponseEntity<Boolean> isHandwritingRecognitionAvailable() {
+        try {
+            boolean available = ocrService.isHandwritingRecognitionAvailable();
+            return ResponseEntity.ok(available);
+        } catch (Exception e) {
+            logger.error("Error checking handwriting recognition availability", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(false);
         }
     }
 }
