@@ -78,11 +78,12 @@ spring:
       on-profile: production
       
   datasource:
-    url: jdbc:postgresql://localhost:5432/picturetojson
+    url: jdbc:postgresql://db:5432/picturetojson
+    driverClassName: org.postgresql.Driver
     username: ${DB_USERNAME:pictureuser}
     password: ${DB_PASSWORD:picturepass}
     
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update

@@ -15,6 +15,7 @@ WORKDIR /app
 
 # Install tesseract and required dependencies
 RUN apk add --no-cache tesseract-ocr tesseract-ocr-data-eng
+RUN apk add --no-cache libc6-compat
 
 # Create upload directory
 RUN mkdir -p /tmp/picture-to-json/uploads
