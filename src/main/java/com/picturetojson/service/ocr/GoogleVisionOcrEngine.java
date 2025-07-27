@@ -26,15 +26,19 @@ public class GoogleVisionOcrEngine implements OcrEngine {
     
     private final boolean enabled;
     private final String credentialsPath;
+    private final List<String> languageHints;
     private int lastConfidence = 85; // Default confidence
     
     public GoogleVisionOcrEngine(@Value("${app.ocr.google-vision.enabled:false}") boolean enabled,
-                                @Value("${app.ocr.google-vision.credentials-path:}") String credentialsPath) {
+                                @Value("${app.ocr.google-vision.credentials-path:}") String credentialsPath,
+                                @Value("${app.ocr.google-vision.language-hints:#{{'en'}}}") List<String> languageHints) {
         this.enabled = enabled;
         this.credentialsPath = credentialsPath;
+        this.languageHints = new ArrayList<>(languageHints != null ? languageHints : List.of("en"));
         
         if (enabled) {
-            logger.info("Google Vision OCR Engine initialized with credentials path: {}", credentialsPath);
+            logger.info("Google Vision OCR Engine initialized with credentials path: {} and language hints: {}", 
+                credentialsPath, this.languageHints);
         } else {
             logger.info("Google Vision OCR Engine disabled in configuration");
         }
@@ -98,10 +102,18 @@ public class GoogleVisionOcrEngine implements OcrEngine {
                 .setType(Feature.Type.DOCUMENT_TEXT_DETECTION)
                 .build();
             
+            // Create image context with language hints for better recognition
+            ImageContext.Builder contextBuilder = ImageContext.newBuilder();
+            if (!languageHints.isEmpty()) {
+                contextBuilder.addAllLanguageHints(languageHints);
+                logger.debug("Using language hints for Google Vision: {}", languageHints);
+            }
+            
             // Create the request
             AnnotateImageRequest request = AnnotateImageRequest.newBuilder()
                 .addFeatures(feature)
                 .setImage(img)
+                .setImageContext(contextBuilder.build())
                 .build();
             
             List<AnnotateImageRequest> requests = new ArrayList<>();
@@ -152,5 +164,25 @@ public class GoogleVisionOcrEngine implements OcrEngine {
         // Check if default credentials are available (environment variable)
         String googleCredentials = System.getenv("GOOGLE_APPLICATION_CREDENTIALS");
         return googleCredentials != null && !googleCredentials.isEmpty();
+    }
+    
+    /**
+     * Set language hints for Google Vision OCR
+     * @param languageHints List of language codes (e.g., ["en", "de", "fr"])
+     */
+    public void setLanguageHints(List<String> languageHints) {
+        if (languageHints != null && !languageHints.isEmpty()) {
+            this.languageHints.clear();
+            this.languageHints.addAll(languageHints);
+            logger.debug("Updated Google Vision language hints to: {}", this.languageHints);
+        }
+    }
+    
+    /**
+     * Get current language hints
+     * @return Current language hints
+     */
+    public List<String> getLanguageHints() {
+        return new ArrayList<>(languageHints);
     }
 }

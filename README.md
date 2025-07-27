@@ -145,9 +145,52 @@ curl "http://localhost:8080/api/documents/ocr/handwriting/available"
 curl "http://localhost:8080/api/documents/ocr/engines"
 ```
 
+### Language Configuration
+
+```bash
+# Get supported languages
+curl "http://localhost:8080/api/documents/ocr/languages/supported"
+
+# Get current language configuration
+curl "http://localhost:8080/api/documents/ocr/languages/current"
+
+# Set German as primary language
+curl -X POST "http://localhost:8080/api/documents/ocr/languages/set?language=de"
+
+# Set German with English as additional language
+curl -X POST "http://localhost:8080/api/documents/ocr/languages/set?language=de&additionalLanguages=en"
+```
+
 ### Using Specific OCR Engine
 
 The system can automatically detect and use the appropriate OCR engine, but you can also manually specify which engine to use through configuration.
+
+#### Supported Languages
+
+The system supports the following languages for both printed and handwritten text:
+
+| Language | Code | Tesseract | Google Vision |
+|----------|------|-----------|---------------|
+| English | `en` | ✅ | ✅ |
+| German | `de` | ✅ | ✅ |
+| French | `fr` | ✅ | ✅ |
+| Spanish | `es` | ✅ | ✅ |
+| Italian | `it` | ✅ | ✅ |
+| Portuguese | `pt` | ✅ | ✅ |
+| Dutch | `nl` | ✅ | ✅ |
+| Russian | `ru` | ✅ | ✅ |
+
+#### German Language Configuration Example
+
+```yaml
+app:
+  ocr:
+    tesseract:
+      language: deu  # German
+      additional-languages: [eng]  # Also support English
+    google-vision:
+      language-hints: [de, en]  # German with English fallback
+    preferred-language: de  # System-wide German preference
 
 ### Batch Processing
 
