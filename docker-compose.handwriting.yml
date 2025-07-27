@@ -1,3 +1,6 @@
+# Docker Compose configuration with handwriting recognition enabled
+version: '3.8'
+
 services:
   db:
     image: postgres:16
@@ -17,7 +20,7 @@ services:
       DB_USERNAME: pictureuser
       DB_PASSWORD: picturepass
       # Handwriting Recognition Configuration
-      GOOGLE_VISION_ENABLED: false
+      GOOGLE_VISION_ENABLED: true
       GOOGLE_APPLICATION_CREDENTIALS: /app/config/google-vision-credentials.json
       HANDWRITING_AUTO_DETECT: true
       DEFAULT_OCR_ENGINE: TESSERACT
@@ -26,10 +29,14 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      # Mount Google Vision credentials (uncomment and adjust path when enabling)
-      # - ./google-vision-credentials.json:/app/config/google-vision-credentials.json:ro
+      # Mount Google Vision credentials
+      - ./google-vision-credentials.json:/app/config/google-vision-credentials.json:ro
       # Mount for persistent uploads
       - ./uploads:/tmp/picture-to-json/uploads
 
 volumes:
   pgdata:
+
+# To use this configuration:
+# 1. Place your google-vision-credentials.json in the same directory
+# 2. Run: docker-compose -f docker-compose.handwriting.yml up --build

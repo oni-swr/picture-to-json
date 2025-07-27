@@ -42,7 +42,37 @@ app:
   ocr:
     tesseract:
       data-path: ${java.io.tmpdir}/tessdata
-      language: eng
+      language: eng  # Primary language (eng, deu, fra, etc.)
+      additional-languages: []  # Additional languages for multi-language support
+    google-vision:
+      enabled: false
+      credentials-path: # Path to Google Vision API credentials JSON file
+      language-hints: [en]  # Language hints for better recognition (en, de, fr, etc.)
+    handwriting:
+      auto-detect: true  # Automatically detect handwriting and use appropriate OCR engine
+    default-engine: TESSERACT  # Default OCR engine (TESSERACT or GOOGLE_VISION)
+    preferred-language: en  # Global preferred language (en, de, fr, etc.)
+    
+---
+# German Language Configuration Profile  
+spring:
+  config:
+    activate:
+      on-profile: german
+      
+app:
+  ocr:
+    tesseract:
+      language: deu  # Primary German language
+      additional-languages: [eng]  # English as additional language
+    google-vision:
+      enabled: ${GOOGLE_VISION_ENABLED:false}
+      credentials-path: ${GOOGLE_APPLICATION_CREDENTIALS:}
+      language-hints: [de, en]  # German with English fallback
+    handwriting:
+      auto-detect: true
+    default-engine: TESSERACT
+    preferred-language: de  # German as preferred language
     
 # Logging Configuration
 logging:
@@ -94,3 +124,12 @@ app:
     tesseract:
       data-path: /usr/share/tesseract-ocr/4.00/tessdata
       language: eng
+      additional-languages: []
+    google-vision:
+      enabled: ${GOOGLE_VISION_ENABLED:false}
+      credentials-path: ${GOOGLE_APPLICATION_CREDENTIALS:}
+      language-hints: [en]
+    handwriting:
+      auto-detect: ${HANDWRITING_AUTO_DETECT:true}
+    default-engine: ${DEFAULT_OCR_ENGINE:TESSERACT}
+    preferred-language: ${OCR_PREFERRED_LANGUAGE:en}

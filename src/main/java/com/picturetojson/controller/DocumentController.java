@@ -4,6 +4,8 @@ import com.picturetojson.dto.CorrectionRequestDto;
 import com.picturetojson.dto.DocumentResponseDto;
 import com.picturetojson.entity.Document;
 import com.picturetojson.service.DocumentProcessingService;
+import com.picturetojson.service.LanguageConfigurationService;
+import com.picturetojson.service.OcrService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
@@ -30,9 +33,15 @@ public class DocumentController {
     private static final Logger logger = LoggerFactory.getLogger(DocumentController.class);
     
     private final DocumentProcessingService documentProcessingService;
+    private final OcrService ocrService;
+    private final LanguageConfigurationService languageConfigurationService;
     
-    public DocumentController(DocumentProcessingService documentProcessingService) {
+    public DocumentController(DocumentProcessingService documentProcessingService, 
+                            OcrService ocrService,
+                            LanguageConfigurationService languageConfigurationService) {
         this.documentProcessingService = documentProcessingService;
+        this.ocrService = ocrService;
+        this.languageConfigurationService = languageConfigurationService;
     }
     
     @PostMapping("/upload")
@@ -183,6 +192,84 @@ public class DocumentController {
             logger.error("Error applying corrections", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(null);
+        }
+    }
+    
+    @GetMapping("/ocr/engines")
+    @Operation(summary = "Get available OCR engines")
+    public ResponseEntity<String[]> getAvailableOcrEngines() {
+        try {
+            String[] engines = ocrService.getAvailableEngines();
+            return ResponseEntity.ok(engines);
+        } catch (Exception e) {
+            logger.error("Error retrieving available OCR engines", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(null);
+        }
+    }
+    
+    @GetMapping("/ocr/handwriting/available")
+    @Operation(summary = "Check if handwriting recognition is available")
+    public ResponseEntity<Boolean> isHandwritingRecognitionAvailable() {
+        try {
+            boolean available = ocrService.isHandwritingRecognitionAvailable();
+            return ResponseEntity.ok(available);
+        } catch (Exception e) {
+            logger.error("Error checking handwriting recognition availability", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(false);
+        }
+    }
+    
+    @GetMapping("/ocr/languages/supported")
+    @Operation(summary = "Get list of supported languages for OCR")
+    public ResponseEntity<Map<String, String>> getSupportedLanguages() {
+        try {
+            Map<String, String> languages = languageConfigurationService.getSupportedLanguages();
+            return ResponseEntity.ok(languages);
+        } catch (Exception e) {
+            logger.error("Error retrieving supported languages", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of());
+        }
+    }
+    
+    @GetMapping("/ocr/languages/current")
+    @Operation(summary = "Get current language configuration")
+    public ResponseEntity<LanguageConfigurationService.LanguageInfo> getCurrentLanguageConfiguration() {
+        try {
+            LanguageConfigurationService.LanguageInfo info = languageConfigurationService.getCurrentLanguageInfo();
+            return ResponseEntity.ok(info);
+        } catch (Exception e) {
+            logger.error("Error retrieving current language configuration", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(null);
+        }
+    }
+    
+    @PostMapping("/ocr/languages/set")
+    @Operation(summary = "Set OCR language configuration")
+    public ResponseEntity<String> setLanguageConfiguration(
+            @Parameter(description = "Primary language code (en, de, fr, etc.)")
+            @RequestParam("language") String language,
+            @Parameter(description = "Additional languages for multi-language support")
+            @RequestParam(value = "additionalLanguages", required = false) List<String> additionalLanguages) {
+        
+        try {
+            if (!languageConfigurationService.isLanguageSupported(language)) {
+                return ResponseEntity.badRequest()
+                    .body("Unsupported language: " + language);
+            }
+            
+            List<String> additional = additionalLanguages != null ? additionalLanguages : List.of();
+            languageConfigurationService.setLanguage(language, additional);
+            
+            logger.info("Language configuration updated to: {} with additional: {}", language, additional);
+            return ResponseEntity.ok("Language configuration updated successfully");
+        } catch (Exception e) {
+            logger.error("Error setting language configuration", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error setting language configuration: " + e.getMessage());
         }
     }
 }
